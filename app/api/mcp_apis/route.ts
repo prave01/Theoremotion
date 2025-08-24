@@ -1,13 +1,15 @@
+import { Ollama } from "@langchain/ollama";
 import { NextResponse } from "next/server";
-import { Client } from "@modelcontextprotocol/sdk/client";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 
 export async function GET() {
-  const client = new Client({
-    name: "manim_mcp",
-    version: "0.1",
-    title: "manim",
+  const llm = new Ollama({
+    model: "gemma3:4b",
+    temperature: 0,
+    maxRetries: 2,
   });
 
-  const transport = SSEClientTransport({});
+  const inputText = "Ollama is an AI company that ";
+
+  const completion = await llm.invoke(inputText);
+  return NextResponse.json({ data: completion }, { status: 200 });
 }

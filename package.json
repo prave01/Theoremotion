@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.72",
+    "@langchain/ollama": "^0.2.3",
     "@modelcontextprotocol/sdk": "^1.17.4",
     "next": "15.5.0",
     "react": "19.1.0",
