@@ -11,6 +11,10 @@
   "dependencies": {
     "@langchain/core": "^0.3.72",
     "@langchain/ollama": "^0.2.3",
+<<<<<<< HEAD
+=======
+    "@langchain/openai": "^0.6.9",
+>>>>>>> 139b001 (Context length need a work :()
     "@modelcontextprotocol/sdk": "^1.17.4",
     "@neondatabase/serverless": "^1.0.1",
     "next": "15.5.0",
