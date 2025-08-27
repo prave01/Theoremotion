@@ -1,1 +1,45 @@
 @import "tailwindcss";
+
+.animated-gradient {
+	background:
+		radial-gradient(
+			ellipse 120% 80% at 70% 20%,
+			rgba(0, 200, 255, 0.18),
+			transparent 50%
+		),
+		radial-gradient(
+			ellipse 100% 60% at 30% 10%,
+			rgba(255, 0, 128, 0.15),
+			transparent 60%
+		),
+		radial-gradient(
+			ellipse 90% 70% at 50% 0%,
+			rgba(160, 32, 240, 0.2),
+			transparent 65%
+		),
+		radial-gradient(
+			ellipse 110% 50% at 80% 30%,
+			rgba(0, 255, 128, 0.12),
+			transparent 40%
+		),
+		radial-gradient(
+			ellipse 100% 60% at 20% 80%,
+			rgba(255, 255, 0, 0.08),
+			transparent 50%
+		), #0a0a0a;
+	background-size: 300% 300%;
+	filter: blur(40px);
+	animation: aurora 25s ease-in-out infinite;
+}
+
+@keyframes aurora {
+	0%,
+	100% {
+		background-position: 0% 50%;
+		transform: scale(0.5);
+	}
+	50% {
+		background-position: 100% 50%;
+		transform: scale(1);
+	}
+}

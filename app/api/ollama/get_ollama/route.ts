@@ -1,7 +1,7 @@
 import { Ollama, OllamaEmbeddings } from "@langchain/ollama";
 import { NextResponse } from "next/server";
 import { pg } from "@/app/db/utils";
-import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
+import { PromptTemplate } from "@langchain/core/prompts";
 
 export async function GET() {
   try {
@@ -18,13 +18,11 @@ export async function GET() {
       truncate: false,
     });
 
-    // Step 1: Embed the query
     const queryEmbedding = await embeddings.embedQuery(
       "generate manim script of bouncing ball",
     );
     const vectorString = `[${queryEmbedding.join(",")}]`;
 
-    // Step 2: Retrieve most relevant stored scripts
     const results = await pg`
       SELECT id, prompt, script
       FROM manim_finetune_data
@@ -32,7 +30,6 @@ export async function GET() {
       LIMIT 1;
     `;
 
-    // Step 3: Create context from retrieved results
     const context = results
       .map((row: any, idx: number) => {
         const safeScript = row.script.replace(/{/g, "{{").replace(/}/g, "}}"); // escape braces for PromptTemplate
