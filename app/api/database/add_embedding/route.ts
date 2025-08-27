@@ -1,3 +1,4 @@
+import { pg } from "@/app/db/utils";
 import { NeonPostgres } from "@langchain/community/vectorstores/neon";
 import { OllamaEmbeddings } from "@langchain/ollama";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
       const embeddings = new OllamaEmbeddings({
         model: "mxbai-embed-large:latest",
         baseUrl: "http://localhost:11434",
+        truncate: false,
       });
 
       const textSplitter = new RecursiveCharacterTextSplitter({
@@ -35,19 +37,26 @@ export async function POST(req: Request) {
         chunkOverlap: 50,
       });
 
-      console.log(jsonData[0].answer);
+      // const vectorStore = await NeonPostgres.initialize(embeddings, {
+      //   connectionString: process.env.DATABASE_URL as string,
+      // });
 
-      const chunkedText = await textSplitter.createDocuments([
-        jsonData[0].answer,
-      ]);
+      for (const i of jsonData) {
+        const chunkedData = await textSplitter.createDocuments([i.query]);
 
-      console.log(chunkedText);
+        const vector = await embeddings.embedDocuments(
+          chunkedData.map((doc) => doc.pageContent),
+        );
 
-      const vectors = await embeddings.embedDocuments(
-        chunkedText.map((doc) => doc.pageContent),
-      );
+        console.log("Embedding length:", vector.length);
 
-      console.log(vectors); // just preview
+        for (const vec of vector) {
+          const vectorString = `[${vec.join(",")}]`;
+          const response =
+            await pg`INSERT INTO manim_finetune_data (prompt, script, embedding) VALUES (${i.query}, ${i.answer}, ${vectorString});`;
+          console.log("response from pg:", response);
+        }
+      }
 
       return NextResponse.json({ done: "done" });
     }
