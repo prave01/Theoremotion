@@ -13,8 +13,21 @@ export default function Home() {
         `,
         }}
       />
-      <div className="text-4xl w-full relative z-10 text-white h-screen font-semibold flex items-center justify-center">
-        <span className="text-center">Animate everything</span>
+      <div className="text-4xl w-full relative z-10 flex-col text-white h-screen font-semibold flex items-center justify-center">
+        <div className="w-auto h-auto text-center  flex flex-col gap-y-4">
+          {" "}
+          <span className="text-center text-7xl bg-gradient-to-tr from-white/80 to-purple-400 text-transparent bg-clip-text">
+            Theoremotion
+          </span>
+          <span className="text-white font-medium text-3xl">
+            Take your thoughts to animations
+          </span>
+        </div>
+      </div>
+      <div className="">
+        <span className="text-xl text-amber-50">
+          Create animations with LLM
+        </span>
       </div>
     </div>
   );
