@@ -1,8 +1,15 @@
+import { Pacifico } from "next/font/google";
+
+const pacifico = Pacifico({
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 export default function Home() {
   return (
-    <div className="min-h-screen w-full relative bg-black">
+    <div className="relative min-h-screen w-full bg-black">
       <div
-        className="absolute inset-0 z-0 -top-10"
+        className="absolute inset-0 -top-10 z-0"
         style={{
           background: `
           radial-gradient(ellipse 120% 80% at 70% 20%, rgba(255, 20, 147, 0.15), transparent 50%),
@@ -13,14 +20,16 @@ export default function Home() {
         `,
         }}
       />
-      <div className="text-4xl w-full relative z-10 flex-col text-white h-screen font-semibold flex items-center justify-center">
-        <div className="w-auto h-auto text-center  flex flex-col gap-y-4">
+      <div className="relative z-10 flex h-screen w-full flex-col items-center justify-center text-4xl font-semibold text-white">
+        <div className="flex h-auto w-auto flex-col gap-y-4 text-center">
           {" "}
-          <span className="text-center text-7xl bg-gradient-to-tr from-white/80 to-purple-400 text-transparent bg-clip-text">
+          <span
+            className={`${pacifico.className} bg-gradient-to-tr from-white/80 to-purple-400 bg-clip-text text-center text-7xl text-transparent`}
+          >
             Theoremotion
           </span>
-          <span className="text-white font-medium text-3xl">
-            Take your thoughts to animations
+          <span className="text-2xl font-medium text-white/80">
+            Take your thoughts to animations in seconds with AI
           </span>
         </div>
       </div>
