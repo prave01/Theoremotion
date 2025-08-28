@@ -1,4 +1,5 @@
-import { HomePageContent } from "./components/HomeContent";
+import { Editor } from "./components/Editor";
+import { HeroSection } from "./components/HeroSection";
 
 export default function Home() {
   return (
@@ -15,8 +16,9 @@ export default function Home() {
         `,
         }}
       />
-      <div className="relative z-10 flex h-screen w-full flex-col items-center justify-center gap-y-10 text-4xl font-semibold text-white">
-        <HomePageContent />
+      <div className="relative z-10 flex h-full flex-col text-4xl font-semibold text-white">
+        <HeroSection />
+        <Editor />
       </div>
     </div>
   );

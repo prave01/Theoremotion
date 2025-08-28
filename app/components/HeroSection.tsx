@@ -9,9 +9,9 @@ const pacifico = Pacifico({
   weight: ["400"],
 });
 
-export const HomePageContent = (props: {}) => {
+export const HeroSection = (props: {}) => {
   return (
-    <>
+    <div className="flex h-screen w-full flex-col items-center justify-center gap-y-10">
       <motion.div
         initial={{ opacity: 0, filter: "blur(5px)" }}
         animate={{ opacity: 1, filter: "blur(0px)" }}
@@ -50,25 +50,27 @@ export const HomePageContent = (props: {}) => {
         </span>
       </motion.div>
 
-      <motion.div
-        initial={{
-          translateY: 100,
-          opacity: 0,
-          filter: "blur(5px)",
-        }}
-        animate={{
-          translateY: 0,
-          opacity: 1,
-          filter: "blur(0px)",
-        }}
-        transition={{ type: "keyframes", delay: 1.5, duration: 0.3 }}
-        className="m-0 flex items-center justify-center rounded-md bg-gradient-to-tr from-purple-500 via-green-500 to-violet-500 p-1"
-      >
-        {" "}
-        <Button className="m-0 h-full w-full cursor-pointer rounded-md border-none bg-black p-2 text-xl font-medium hover:bg-black hover:text-pink-200">
-          Let's Animate
-        </Button>
-      </motion.div>
-    </>
+      <a className="h-auto w-auto" href="#editor">
+        <motion.div
+          initial={{
+            translateY: 100,
+            opacity: 0,
+            filter: "blur(5px)",
+          }}
+          animate={{
+            translateY: 0,
+            opacity: 1,
+            filter: "blur(0px)",
+          }}
+          transition={{ type: "keyframes", delay: 1.5, duration: 0.3 }}
+          className="m-0 flex items-center justify-center rounded-md bg-gradient-to-tr from-purple-500 via-green-500 to-violet-500 p-0.5"
+        >
+          {" "}
+          <Button className="m-0 h-full w-full cursor-pointer rounded-md border-none p-2 px-5 text-xl font-normal backdrop-blur-md hover:text-pink-200 hover:backdrop-blur-lg">
+            Let's Animate
+          </Button>
+        </motion.div>
+      </a>
+    </div>
   );
 };
