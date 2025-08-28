@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Pacifico } from "next/font/google";
 
 const pacifico = Pacifico({
@@ -20,23 +21,31 @@ export default function Home() {
         `,
         }}
       />
-      <div className="relative z-10 flex h-screen w-full flex-col items-center justify-center text-4xl font-semibold text-white">
-        <div className="flex h-auto w-auto flex-col gap-y-4 text-center">
+      <div className="relative z-10 flex h-screen w-full flex-col items-center justify-center gap-y-10 text-4xl font-semibold text-white">
+        <div className="flex h-auto w-auto flex-col gap-y-2 text-center">
           {" "}
           <span
-            className={`${pacifico.className} bg-gradient-to-tr from-white/80 to-purple-400 bg-clip-text text-center text-7xl text-transparent`}
+            className={`${pacifico.className} bg-gradient-to-tr from-white/80 to-purple-400 bg-clip-text text-center text-4xl text-transparent md:text-5xl lg:text-7xl`}
           >
             Theoremotion
           </span>
-          <span className="text-2xl font-medium text-white/80">
-            Take your thoughts to animations in seconds with AI
+          <span className="text-2xl font-extrabold text-white/80 md:font-semibold lg:text-4xl">
+            Generate animations with AI
           </span>
         </div>
-      </div>
-      <div className="">
-        <span className="text-xl text-amber-50">
-          Create animations with LLM
-        </span>
+        <div className="w-full max-w-lg">
+          <span className="flex w-full text-center text-sm font-normal text-orange-200/80 md:text-lg">
+            Generate | Run | See live-preview and Debug manim scripts with AI,
+            you can export the generated animations as mp4
+          </span>
+        </div>
+
+        <div className="m-0 flex items-center justify-center rounded-md bg-gradient-to-tr from-purple-500 via-green-500 to-violet-500 p-1">
+          {" "}
+          <Button className="m-0 h-full w-full cursor-pointer rounded-md border-none bg-black p-0 p-2 text-xl font-bold hover:bg-black hover:text-pink-200">
+            Lets start animating
+          </Button>
+        </div>
       </div>
     </div>
   );
