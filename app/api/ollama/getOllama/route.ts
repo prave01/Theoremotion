@@ -42,50 +42,24 @@ export async function POST(req: Request) {
 
     console.log("context:", context);
 
-    // Build system + user messages for OpenAI
-    const messages = [
-      {
-        role: "system",
-        content: [
-          {
-            type: "input_text",
-            text: `You are a Manim script expert.
-You generate correct, runnable Python Manim scripts.
-Only output valid Python code (no explanations).`,
-          },
-        ],
-      },
-      {
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: `Task: Create a Manim script for "${data?.query || "bouncing ball animation"}".
-With this knowledge: ${context}.
-Extra context: use geometric shapes with proper labels.`,
-          },
-        ],
-      },
-    ];
-
     // Call OpenAI (Groq)
     const response = await openai.chat.completions.create({
-      model: "deepseek-r1-distill-llama-70b", // or "gpt-4o-mini" etc
+      model: "deepseek-r1-distill-llama-70b",
       messages: [
         {
           role: "system",
-          content: `You are a Manim script expert.
-You generate correct, runnable Python Manim scripts.
-Only output valid Python code (no explanations).`,
+          content:
+            'You are a Manim script director.\nYou generate only correct, runnable Python Manim scripts.\nAlways output a single JSON object with exactly one key: "script".\nThe value of "script" must be the complete Python code including all required imports (e.g., \'from manim import *\').\nThe script must:\n- Define exactly one Scene class.\n- Place objects with clear spatial separation to avoid overlaps.\n- Use geometric shapes with labels when requested.\n- Ensure animations are staged (sequential or well-spaced) for clarity.\n- Follow current Manim best practices (use FadeIn, Write, Create, etc.).\nDo not include explanations, markdown, or comments outside the JSON.',
         },
         {
           role: "user",
-          content: `Task: Create a Manim script for "${data?.query || "bouncing ball animation"}".
-With this knowledge: ${context}.
-Extra context: use geometric shapes with proper labels.`,
+          content: `Task: Create a Manim script for ${data?.query || "bouncing ball animation"}".\nWith this knowledge: ${context}.\nExtra context: Use geometric shapes with proper labels. Return the output strictly in JSON.`,
         },
       ],
       temperature: 0,
+      response_format: {
+        type: "json_object",
+      },
     });
 
     const llm_output = response.choices[0].message?.content || "";
