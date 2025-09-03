@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     // Generate prompt
     const buildPrompt = await openai.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -71,67 +71,90 @@ You are a Manim script generator.
     // Call OpenAI (Groq)
 
     const response = await openai.chat.completions.create({
-      model: "deepseek-r1-distill-llama-70b",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
           content: `
-You are a Manim script generator.
-Your sole output must be a valid, runnable Python script.
 
-Output rules:
-- Always return a single JSON object.
-- JSON must contain exactly one key: "script".
-- The value of "script" must be a complete Python file with all necessary imports (e.g., "from manim import *").
+You are a Manim script generator.  
+Your ONLY output must be a valid JSON object with this shape:  
+{ "script": "<COMPLETE PYTHON SCRIPT>" }  
 
-Script requirements:
-1. Define exactly one Scene class.
-2. Keep all objects inside the default camera frame (no cropping or overflow).
-3. Avoid clutter and overlaps:
-   - Place objects with clear spacing using "next_to", "above", "below", or "shift".
-   - Fade out or remove old objects before adding new ones, unless reused.
-4. Sequential staging:
-   - Introduce one concept at a time.
-   - Group related objects and fade them out together when no longer needed.
-5. Labels:
-   - Always wrap math in $...$ (e.g., "$a^2$" not "a^2").
-   - Place labels clearly near their objects, never overlapping.
-6. Groups:
-   - Use "Group" for combining objects (works with both Mobject and VMobject).
-   - Do NOT use "VGroup" unless absolutely sure all members are VMobject.
-7. Animations:
-   - Use "Create", "Write", "FadeIn", "FadeOut" smoothly.
-   - Avoid leaving objects behind when introducing new ones.
-8. Ending:
-   - Ensure the scene ends with a clean fade out of all objects.
+You can use this knowledge base: ${context},  
 
-Error prevention:
-- Always enclose LaTeX expressions in "$...$".
-- Never mix Mobject types in VGroup; default to Group.
-- Avoid raw LaTeX that requires math mode (e.g., use "$\\\\triangle ABC$" not "\\\\triangle ABC").
+Rules:  
+1. The value of "script" must be a full, runnable Manim Python file with:  
+   - "from manim import *"  
+   - Exactly ONE Scene class.  
 
-Important:
-- Do not include explanations, comments, or markdown outside the JSON.
-- The JSON object must be the only output.
+2. Layout & spacing:  
+   - Keep all objects fully inside the default frame (no cropping).  
+   - Use clear spacing with "next_to", "above", "below", or "shift".  
+   - Never overlap text, shapes, or equations.  
+   - Titles/subtitles must always stay at the top.  
+   - Equations should appear centered or slightly above if diagrams follow.  
+   - Diagrams must be placed below equations with enough buffer.  
+   - Labels must always be near their objects but never touching or overlapping.  
+
+3. Sequencing:  
+   - Show one concept at a time.  
+   - Always FadeOut or remove old objects before introducing new ones in the same area.  
+   - Related objects must be grouped with "Group" (never VGroup unless all are VMobjects).  
+
+4. Labels:  
+   - All math MUST be inside $...$ (e.g. "$a^2$").  
+   - Keep font sizes readable and consistent.  
+   - Position labels with next_to or shift so they never overlap.  
+
+5. Animations:  
+   - Use smooth, purposeful transitions: FadeIn, FadeOut, Write, Create, MoveAlongPath.  
+   - Add small pauses (self.wait) to let viewers absorb each concept.  
+   - Never leave stray objects behind on screen.  
+
+6. Ending:  
+   - Scene must finish with FadeOut of ALL objects (use Group, not VGroup).  
+
+7. Error prevention:  
+   - No raw LaTeX outside math mode.  
+   - No mixing Mobjects inside VGroup.  
+   - Always size and position objects relative to screen or main object.  
+   - Ensure new objects never collide with or overwrite existing ones.  
+   - All text and MathTex must be UTF-8 safe.  
+
+Final check:  
+- Output must be ONLY the JSON object.  
+- No extra text, no comments, no markdown.  
+
       `.trim(),
         },
         {
           role: "user",
-          content: `
-Task: Create a Manim script for ${FinalPrompt || "bouncing ball animation"}.
-Context: ${context}.
-Extra requirement: Use geometric shapes with clear, non-overlapping labels.
-Return the output strictly as a JSON object.
-      `.trim(),
+          content: `User Quert : Generate manim script for ${FinalPrompt}`,
         },
       ],
-      temperature: 0.6,
-      top_p: 0.95,
+      temperature: 0.4,
+      top_p: 0.9,
       response_format: { type: "json_object" },
     });
+
     const llm_output = response.choices[0].message?.content || "";
 
     console.log("llm_response:", llm_output);
+
+    console.log("Sending to manim engine");
+
+    const engine_response = await fetch("http://0.0.0.0:8000/run", {
+      method: "POST", // must specify when sending a body
+      headers: {
+        "Content-Type": "application/json", // tell server it's JSON
+      },
+      body: JSON.stringify({
+        code: llm_output,
+      }),
+    });
+
+    console.log("Engine response", engine_response);
 
     return NextResponse.json({ llm_output }, { status: 200 });
   } catch (e: any) {
