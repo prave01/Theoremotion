@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     // Generate prompt
     const buildPrompt = await openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",
@@ -71,7 +71,7 @@ You are a Manim script generator.
     // Call OpenAI (Groq)
 
     const response = await openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",
@@ -133,7 +133,7 @@ Final check:
           content: `User Quert : Generate manim script for ${FinalPrompt}`,
         },
       ],
-      temperature: 0.4,
+      temperature: 1,
       top_p: 0.9,
       response_format: { type: "json_object" },
     });
@@ -141,20 +141,6 @@ Final check:
     const llm_output = response.choices[0].message?.content || "";
 
     console.log("llm_response:", llm_output);
-
-    console.log("Sending to manim engine");
-
-    const engine_response = await fetch("http://0.0.0.0:8000/run", {
-      method: "POST", // must specify when sending a body
-      headers: {
-        "Content-Type": "application/json", // tell server it's JSON
-      },
-      body: JSON.stringify({
-        code: llm_output,
-      }),
-    });
-
-    console.log("Engine response", engine_response);
 
     return NextResponse.json({ llm_output }, { status: 200 });
   } catch (e: any) {
