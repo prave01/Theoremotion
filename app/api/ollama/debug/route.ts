@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { pg } from "@/app/db/utils";
 import OpenAI from "openai";
 import build from "next/dist/build";
+import { headers } from "next/headers";
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
     });
 
     const buildPrompt = await openai.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
       messages: [
         {
           role: "system",
@@ -40,8 +41,8 @@ You are a Manim debugger.
 
     // Call OpenAI (Groq)
 
-    const response = await openai.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+    const completion = await openai.chat.completions.create({
+      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
       messages: [
         {
           role: "system",
@@ -79,13 +80,29 @@ Final check:
       ],
       temperature: 0.4,
       top_p: 0.9,
+      stream: true,
       response_format: { type: "json_object" },
     });
-    const llm_output = response.choices[0].message?.content || "";
 
-    console.log("debug_llm_response:", llm_output);
+    const encoder = new TextEncoder();
 
-    return NextResponse.json({ llm_output }, { status: 200 });
+    const stream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of completion) {
+          controller.enqueue(
+            encoder.encode(JSON.stringify({ output: chunk }) + "\n"),
+          );
+          await new Promise((r) => setTimeout(r, 500));
+        }
+        controller.close();
+      },
+    });
+
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson",
+      },
+    });
   } catch (e: any) {
     console.error("error:", e);
     return NextResponse.json({ error: e?.toString() }, { status: 400 });

@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     // Generate prompt
     const buildPrompt = await openai.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -70,8 +70,8 @@ You are a Manim script generator.
 
     // Call OpenAI (Groq)
 
-    const response = await openai.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+    const completion = await openai.chat.completions.create({
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -135,14 +135,29 @@ Final check:
       ],
       temperature: 1,
       top_p: 0.9,
+      stream: true,
       response_format: { type: "json_object" },
     });
 
-    const llm_output = response.choices[0].message?.content || "";
+    const encoder = new TextEncoder();
 
-    console.log("llm_response:", llm_output);
+    const stream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of completion) {
+          controller.enqueue(
+            encoder.encode(JSON.stringify({ output: chunk }) + "\n"),
+          );
+          await new Promise((r) => setTimeout(r, 500));
+        }
+        controller.close();
+      },
+    });
 
-    return NextResponse.json({ llm_output }, { status: 200 });
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson",
+      },
+    });
   } catch (e: any) {
     console.error("error:", e);
     return NextResponse.json({ error: e?.toString() }, { status: 400 });

@@ -3,56 +3,51 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
+import { CodeBlock } from "@/components/ui/code-block";
 
 export const Editor = (props: {}) => {
   const [prompt, setPrompt] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState<boolean>(false);
+
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-  const runCode = async () => {
-    const response = await fetch("http://localhost:8000/run", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code: `
-from manim import *
+  const [currentCode, setCurrCode] = useState<string | undefined>(undefined);
 
-class BinaryTreeDemo(Scene):
-    def construct(self):
-        dot = Dot()
-        self.play(Create(dot))
-        self.wait()
-        `,
-      }),
-    });
-
-    if (response.ok) {
-      const blob = await response.blob();
-      setVideoUrl(URL.createObjectURL(blob));
-    }
-  };
+  const [copied, setCopied] = useState<any>();
 
   const handleSubmit = async () => {
-    let currentCode = null;
     let retry = true;
+    setLoading(true);
 
-    let codeToRun: any = currentCode;
+    let codeToRun = currentCode;
+
     if (!codeToRun) {
-      const response = await fetch("/api/ollama/getOllama", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: prompt }),
-      });
-      const data = await response.json();
+      const res = await fetch("/api/stream");
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
 
-      const script = await JSON.parse(data.llm_output).script;
-      console.log("llm_data", script);
-      codeToRun = script;
+      let fullText = "";
+
+      while (true) {
+        const { done, value } = await reader!.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+
+        // NDJSON => split by lines
+        const lines = chunk.split("\n").filter(Boolean);
+        for (const line of lines) {
+          const parsed = JSON.parse(line);
+          fullText += parsed.output;
+          console.log("Partial:", fullText); // <-- update UI progressively
+        }
+      }
+      setCurrCode(codeToRun);
     }
 
     while (retry) {
       retry = false;
-
       console.log("codetorun", codeToRun);
 
       const renderer_response = await fetch("http://localhost:8000/run", {
@@ -68,7 +63,6 @@ class BinaryTreeDemo(Scene):
       }
 
       const renderer_data = await renderer_response.json();
-
       console.log("data,::", renderer_data);
 
       const debug_response = await fetch("/api/ollama/debug", {
@@ -81,10 +75,8 @@ class BinaryTreeDemo(Scene):
       });
 
       const debugged = await debug_response.json();
-
-      const debug_script = await JSON.parse(debugged.llm_output).script;
-
-      codeToRun = debug_script;
+      codeToRun = JSON.parse(debugged.llm_output).script;
+      setCurrCode(codeToRun);
       retry = true;
     }
   };
@@ -93,9 +85,25 @@ class BinaryTreeDemo(Scene):
       id="editor"
       className="flex h-screen w-full items-center justify-center bg-black"
     >
-      {videoUrl && <video autoPlay loop controls width="600" src={videoUrl} />}
-      <div className="flex h-auto w-auto flex-col items-center justify-center gap-y-4">
+      <div className="flex h-[400px] w-5xl flex-col items-center justify-center gap-y-4 text-sm">
         {" "}
+        <div className="trasition-all flex h-full w-full items-start gap-2 duration-75 ease-in-out">
+          <video
+            loop
+            autoPlay={videoUrl != undefined ? true : false}
+            controls
+            width="600"
+            className="h-full w-full rounded-lg border-2 border-gray-500"
+            src={videoUrl || undefined}
+          />
+
+          <CodeBlock
+            language="python"
+            filename=""
+            highlightLines={[9, 13, 14, 18]}
+            code={currentCode || ""}
+          />
+        </div>
         <div className="h-auto rounded-2xl border-1 border-zinc-800 p-0.5">
           <Textarea
             value={prompt || ""}
@@ -108,10 +116,11 @@ class BinaryTreeDemo(Scene):
           />
         </div>
         <Button
+          disabled={loading}
           onClick={handleSubmit}
-          className="text-whit cursor-pointer text-sm hover:bg-purple-200 hover:text-black"
+          className="text-whit cursor-pointer bg-zinc-500 text-sm hover:bg-purple-200 hover:text-black"
         >
-          Start animate
+          {loading ? "Loading.." : "Start animate"}
         </Button>
       </div>
     </div>
