@@ -5,6 +5,16 @@ html {
 	scroll-behavior: smooth;
 }
 
+/* Hide scrollbar but keep scrolling */
+.no-scrollbar {
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none; /* Chrome, Safari */
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

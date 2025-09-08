@@ -4,6 +4,7 @@ import { pg } from "@/app/db/utils";
 import OpenAI from "openai";
 import build from "next/dist/build";
 import { headers } from "next/headers";
+import { Groq } from "groq-sdk";
 
 export async function POST(req: Request) {
   try {
@@ -80,28 +81,29 @@ Final check:
       ],
       temperature: 0.4,
       top_p: 0.9,
-      stream: true,
       response_format: { type: "json_object" },
     });
 
-    const encoder = new TextEncoder();
+    // const encoder = new TextEncoder();
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        for await (const chunk of completion) {
-          controller.enqueue(
-            encoder.encode(JSON.stringify({ output: chunk }) + "\n"),
-          );
-          await new Promise((r) => setTimeout(r, 500));
-        }
-        controller.close();
-      },
-    });
+    // const stream = new ReadableStream({
+    //   async start(controller) {
+    //     for await (const chunk of completion) {
+    //       controller.enqueue(
+    //         encoder.encode(
+    //           JSON.stringify({ output: chunk.choices[0].delta }) + "\n",
+    //         ),
+    //       );
+    //       await new Promise((r) => setTimeout(r, 500));
+    //     }
+    //     controller.close();
+    //   },
+    // });
+    //
+    //
 
-    return new NextResponse(stream, {
-      headers: {
-        "Content-Type": "application/x-ndjson",
-      },
+    return NextResponse.json({
+      llm_output: completion.choices[0].message.content,
     });
   } catch (e: any) {
     console.error("error:", e);

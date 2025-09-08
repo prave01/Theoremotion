@@ -2,7 +2,6 @@ import { OllamaEmbeddings } from "@langchain/ollama";
 import { NextResponse } from "next/server";
 import { pg } from "@/app/db/utils";
 import OpenAI from "openai";
-import build from "next/dist/build";
 
 export async function POST(req: Request) {
   try {
@@ -43,7 +42,7 @@ export async function POST(req: Request) {
 
     // Generate prompt
     const buildPrompt = await openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",
@@ -68,10 +67,12 @@ You are a Manim script generator.
 
     const FinalPrompt = buildPrompt.choices[0].message.content || "";
 
+    console.log("FinalPrompt", FinalPrompt);
+
     // Call OpenAI (Groq)
 
-    const completion = await openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+    const completion = openai.chat.completions.stream({
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",
@@ -135,7 +136,7 @@ Final check:
       ],
       temperature: 1,
       top_p: 0.9,
-      stream: true,
+      reasoning_effort: "low",
       response_format: { type: "json_object" },
     });
 
@@ -143,9 +144,12 @@ Final check:
 
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of completion) {
+        for await (const event of completion) {
+          console.log(event.choices[0].delta);
           controller.enqueue(
-            encoder.encode(JSON.stringify({ output: chunk }) + "\n"),
+            encoder.encode(
+              JSON.stringify({ output: event.choices[0].delta }) + "\n",
+            ),
           );
           await new Promise((r) => setTimeout(r, 500));
         }

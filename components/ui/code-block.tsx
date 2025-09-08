@@ -3,10 +3,13 @@ import React from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { atomDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { IconCheck, IconCopy } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { Button } from "./button";
 
 type CodeBlockProps = {
   language: string;
   filename: string;
+  isError: boolean;
   highlightLines?: number[];
 } & (
     | {
@@ -27,6 +30,7 @@ type CodeBlockProps = {
 export const CodeBlock = ({
   language,
   filename,
+  isError,
   code,
   highlightLines = [],
   tabs = [],
@@ -54,7 +58,14 @@ export const CodeBlock = ({
     : highlightLines;
 
   return (
-    <div className="relative flex h-full w-full overflow-y-auto rounded-lg bg-slate-900 p-4 font-mono text-sm">
+    <div
+      className={cn(
+        "relative flex h-full w-full max-w-[40%] rounded-lg border-1 border-cyan-500 p-4 font-mono text-sm",
+        isError
+          ? "bg-gradient-to-t from-red-500/30 to-transparent backdrop-blur-md"
+          : "bg-black",
+      )}
+    >
       <div className="flex-col gap-2">
         {tabsExist && (
           <div className="flex">
@@ -84,6 +95,15 @@ export const CodeBlock = ({
           </div>
         )}
       </div>
+      {isError ? (
+        <div className="absolute inset-0 z-10 flex h-full w-full items-center justify-center">
+          <Button className="">
+            <span className="animate-pulse">Fixing</span>
+          </Button>
+        </div>
+      ) : (
+        <></>
+      )}
       <SyntaxHighlighter
         language={activeLanguage}
         style={atomDark}
@@ -91,8 +111,12 @@ export const CodeBlock = ({
           margin: 0,
           padding: 0,
           background: "transparent",
-          fontSize: "0.875rem", // text-sm equivalent
+          fontSize: "0.875rem",
+          width: "100%",
+          overflowY: "scroll",
+          overflowX: "scroll",
         }}
+        className={cn(isError && "blur-xs", "no-scrollbar")}
         wrapLines={true}
         showLineNumbers={true}
         lineProps={(lineNumber) => ({
@@ -101,7 +125,6 @@ export const CodeBlock = ({
               ? "rgba(255,255,255,0.1)"
               : "transparent",
             display: "block",
-            width: "100%",
           },
         })}
         PreTag="div"
