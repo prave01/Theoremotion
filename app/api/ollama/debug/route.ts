@@ -1,10 +1,7 @@
 import { OllamaEmbeddings } from "@langchain/ollama";
 import { NextResponse } from "next/server";
-import { pg } from "@/app/db/utils";
 import OpenAI from "openai";
-import build from "next/dist/build";
-import { headers } from "next/headers";
-import { Groq } from "groq-sdk";
+import { pg } from "@/app/db/utils";
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +19,7 @@ export async function POST(req: Request) {
         {
           role: "system",
           content: `
-You are a Manim debugger.
+You are going to generate prompt for the given error, so the next llm will solves.
 - Your goal is to carefully analyze Manim Python scripts and find issues.
 - Point out syntax errors, runtime problems, or incorrect Manim API usage.
 - Suggest fixes in clean, valid Python code compatible with Manim.
@@ -48,10 +45,11 @@ You are a Manim debugger.
         {
           role: "system",
           content: `
-You are a Manim debugger.  
+You are a Manim debugger/Error solving expert.  
 Your ONLY output must be a valid JSON object with this shape:  
 
-You to solve this Error : ${data?.error} for this  Code: ${data?.code}
+
+Here is some example python script which is closely realted to this problem
 
 OTUTPUT_FORMAT:
 { "script": "<CORRECTED PYTHON SCRIPT>" }  
@@ -76,31 +74,15 @@ Final check:
         },
         {
           role: "user",
-          content: `Debug the following Manim script:\n\n${FinalPrompt}`,
+          content: `
+Help me fix this Manim code:\n\n${data?.error}\n
+Here is something that may help:\n\n${FinalPrompt}`,
         },
       ],
       temperature: 0.4,
       top_p: 0.9,
       response_format: { type: "json_object" },
     });
-
-    // const encoder = new TextEncoder();
-
-    // const stream = new ReadableStream({
-    //   async start(controller) {
-    //     for await (const chunk of completion) {
-    //       controller.enqueue(
-    //         encoder.encode(
-    //           JSON.stringify({ output: chunk.choices[0].delta }) + "\n",
-    //         ),
-    //       );
-    //       await new Promise((r) => setTimeout(r, 500));
-    //     }
-    //     controller.close();
-    //   },
-    // });
-    //
-    //
 
     return NextResponse.json({
       llm_output: completion.choices[0].message.content,

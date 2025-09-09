@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       SELECT id, prompt, script
       FROM manim_finetune_data
       ORDER BY embedding <-> ${vectorString}
-      LIMIT 5;
+      LIMIT 8;
     `;
 
     const context = results
@@ -47,15 +47,20 @@ export async function POST(req: Request) {
         {
           role: "system",
           content: `
-You are a Manim script generator.
+You are a Manim instructor/prompt generator for a llm which gonna generate manim script.
 - Think like a director and scene designer.
 - The goal is to produce clear, lecture-ready animations for teaching.
 - Scripts must be error-free, easy to understand, and visually engaging.
 - Avoid overlapping of text or elements. Always position objects relative to the content in a readable way.
 - Use smooth, purposeful animations that aid comprehension.
+- No overlaps between animations, make sure the relative gropu animations are on exact reasobale position,
+- Make sure every animation fits inide the view height and switch,
+- Major animations should take places in center,
 - Apply consistent styling (colors, labels, positions).
 - Output only valid Python code compatible with Manim.
 - Make sure you added space between two animation so they will never overlaps each other and dont follow the origin position for previouly rendered animation scene for upcomings
+
+IMPORTANT: This is for lecturing purpose and big universities like standford, IIT madras and MIT
 `.trim(),
         },
         {
@@ -71,7 +76,7 @@ You are a Manim script generator.
 
     // Call OpenAI (Groq)
 
-    const completion = openai.chat.completions.stream({
+    const completion = openai.chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
         {
@@ -140,30 +145,11 @@ Final check:
       response_format: { type: "json_object" },
     });
 
-    const encoder = new TextEncoder();
+    const content = (await completion).choices[0].message.content;
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        for await (const event of completion) {
-          console.log(event.choices[0].delta);
-          controller.enqueue(
-            encoder.encode(
-              JSON.stringify({ output: event.choices[0].delta }) + "\n",
-            ),
-          );
-          await new Promise((r) => setTimeout(r, 500));
-        }
-        controller.close();
-      },
-    });
-
-    return new NextResponse(stream, {
-      headers: {
-        "Content-Type": "application/x-ndjson",
-      },
-    });
+    return NextResponse.json({ llm_output: content }, { status: 200 });
   } catch (e: any) {
-    console.error("error:", e);
+    console.error("", e);
     return NextResponse.json({ error: e?.toString() }, { status: 400 });
   }
 }

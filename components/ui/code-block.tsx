@@ -60,7 +60,7 @@ export const CodeBlock = ({
   return (
     <div
       className={cn(
-        "relative flex h-full w-full max-w-[40%] rounded-lg border-1 border-cyan-500 p-4 font-mono text-sm",
+        "relative z-10 flex h-full w-full max-w-[40%] rounded-lg border-2 border-dashed border-cyan-500 p-4 font-mono text-sm",
         isError
           ? "bg-gradient-to-t from-red-500/30 to-transparent backdrop-blur-md"
           : "bg-black",

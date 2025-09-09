@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { CodeBlock } from "@/components/ui/code-block";
-import { POST } from "../api/database/addEmbedding/route";
-import { toast, Toaster } from "sonner";
-import { delay } from "motion/react";
+import { toast } from "sonner";
+import { AnimatePresence, motion } from "motion/react";
+import { CustomToast } from "./CustomToast";
 
 export const Editor = (props: {}) => {
   const [prompt, setPrompt] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export const Editor = (props: {}) => {
 
     let codeToRun = currentCode;
 
-    const res = await fetch("/api/ollama/getOllama", {
+    await fetch("/api/ollama/getOllama", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,35 +39,17 @@ export const Editor = (props: {}) => {
       body: JSON.stringify({
         query: prompt,
       }),
-    });
-    console.log("Request sent");
-    const reader = res.body?.getReader();
-    const decoder = new TextDecoder();
-
-    let fullText = "";
-
-    while (true) {
-      const { done, value } = await reader!.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-
-      const lines = chunk.split("\n").filter(Boolean);
-      for (const line of lines) {
-        const parsed = await JSON.parse(line);
-
-        if (parsed.output.reasoning || parsed.output.role) {
-          console.log("reasoning");
-        } else {
-          const content = await JSON.parse(line).output.content;
-          const script = await JSON.parse(content).script;
-          fullText += script;
-          console.log("Partial:", fullText);
-          codeToRun = fullText;
-          setCurrCode(fullText);
-        }
-      }
-    }
+    })
+      .then(async (data) => {
+        const parsed = await data.json();
+        const script = await JSON.parse(parsed.llm_output).script;
+        codeToRun = script;
+        setCurrCode(codeToRun);
+      })
+      .catch((e) => {
+        toast.error(e as string);
+        return;
+      });
 
     while (retry) {
       retry = false;
@@ -83,6 +65,7 @@ export const Editor = (props: {}) => {
         const blob = await renderer_response.blob();
         setVideoUrl(URL.createObjectURL(blob));
         setLoading(false);
+        setError(false);
         toast.success("Rendered Successfull");
         return;
       }
@@ -136,7 +119,7 @@ export const Editor = (props: {}) => {
     >
       <div className="flex h-[400px] w-5xl flex-col items-center justify-center gap-y-4 text-sm">
         {" "}
-        <div className="flex h-full w-full items-start gap-2 transition-all duration-75 ease-in-out">
+        <div className="relative flex h-full w-full items-start gap-2 transition-all duration-75 ease-in-out">
           <video
             loop
             autoPlay={videoUrl != undefined ? true : false}
@@ -151,6 +134,13 @@ export const Editor = (props: {}) => {
             highlightLines={[9, 13, 14, 18]}
             code={currentCode || ""}
           />
+          {loading ? (
+            <CustomToast message={"Generating Script"} />
+          ) : error ? (
+            <CustomToast message={"Debugging error"} />
+          ) : (
+            <></>
+          )}
         </div>
         <div className="h-auto rounded-2xl border-1 border-zinc-800 p-0.5">
           <Textarea
