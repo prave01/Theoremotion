@@ -5,8 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { CodeBlock } from "@/components/ui/code-block";
 import { toast } from "sonner";
-import { AnimatePresence, motion } from "motion/react";
 import { CustomToast } from "./CustomToast";
+import axios from "axios";
 
 export const Editor = (props: {}) => {
   const [prompt, setPrompt] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export const Editor = (props: {}) => {
 
   const handleSubmit = async () => {
     if (prompt == "" || prompt == null) {
-      toast.message("Invalid Input ");
+      toast.message("Invalid Input");
       return;
     }
     let retry = true;
@@ -45,6 +45,9 @@ export const Editor = (props: {}) => {
         const script = await JSON.parse(parsed.llm_output).script;
         codeToRun = script;
         setCurrCode(codeToRun);
+        toast.message("Script generated successfully", {
+          description: "By Openai/gpt-oss-120B",
+        });
       })
       .catch((e) => {
         toast.error(e as string);
@@ -53,30 +56,34 @@ export const Editor = (props: {}) => {
 
     while (retry) {
       retry = false;
-      console.log("codetorun", codeToRun);
 
-      const renderer_response = await fetch("http://localhost:8000/run", {
+      const response = await axios({
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: codeToRun }),
+        url: "http://localhost:8000/run-stream",
+        data: {
+          code: currentCode,
+        },
       });
 
-      if (renderer_response.ok) {
-        const blob = await renderer_response.blob();
-        setVideoUrl(URL.createObjectURL(blob));
-        setLoading(false);
-        setError(false);
-        toast.success("Rendered Successfull");
-        return;
-      }
+      // const renderer_response = await fetch("http://localhost:8000/run", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ code: codeToRun }),
+      // });
+      //
+      // if (renderer_response.ok) {
+      //   const blob = await renderer_response.blob();
+      //   setVideoUrl(URL.createObjectURL(blob));
+      //   setLoading(false);
+      //   setError(false);
+      //   toast.success("Rendered Successfull");
+      //   return;
+      // }
+      toast("Debugging and fixing with AI");
 
       setError(true);
-      toast.error("Error occured while rendering");
 
       const renderer_data = await renderer_response.json();
-      console.log("data,::", renderer_data);
-
-      toast("Debugging and fixing with AI");
 
       const debug_response = await fetch("/api/ollama/debug", {
         method: "POST",
