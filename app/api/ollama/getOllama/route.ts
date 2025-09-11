@@ -2,6 +2,9 @@ import { OllamaEmbeddings } from "@langchain/ollama";
 import { NextResponse } from "next/server";
 import { pg } from "@/app/db/utils";
 import OpenAI from "openai";
+import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
+import * as tf from "@tensorflow/tfjs-node";
+import { InferenceClient } from "@huggingface/inference";
 
 export async function POST(req: Request) {
   try {
@@ -13,16 +16,34 @@ export async function POST(req: Request) {
       baseURL: "https://api.groq.com/openai/v1",
     });
 
-    // Embeddings (keep Ollama for vector search)
-    const embeddings = new OllamaEmbeddings({
-      model: "mxbai-embed-large:latest",
-      baseUrl: "http://localhost:11434",
-      truncate: false,
+    const client = new InferenceClient(process.env.HUGGING_FACE);
+
+    const output = await client.featureExtraction({
+      model: "mixedbread-ai/mxbai-embed-large-v1",
+      inputs: data?.query,
+      provider: "hf-inference",
     });
 
-    // Create query embedding
-    const queryEmbedding = await embeddings.embedQuery(data?.query);
-    const vectorString = `[${queryEmbedding.join(",")}]`;
+    // const model = new HuggingFaceTransformersEmbeddings({
+    //   model: "Xenova/all-MiniLM-L12-v2",
+    // });
+
+    // const model = await tf.loadGraphModel(
+    //   "https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1",
+    // );
+    //
+    // const embeddings = await model.embed([data?.query]);
+    //
+    // const queryEmbedding = await model.embedQuery(data?.query);
+    //
+    const vectorString = `[${output.join(",")}]`;
+    // Get the embedding array
+    // const queryEmbedding = await embeddingModel.embeddings.create({
+    // 	model: "text-embedding-3-small",
+    // 	input: data?.query,
+    // });
+
+    // const vectorString = `[${queryEmbedding.data[0].embedding.join(",")}]`;
 
     // Retrieve most relevant context from Postgres
     const results = await pg`

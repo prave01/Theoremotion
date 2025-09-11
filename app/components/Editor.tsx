@@ -57,64 +57,69 @@ export const Editor = (props: {}) => {
     while (retry) {
       retry = false;
 
-      const response = await axios({
-        method: "POST",
-        url: "http://localhost:8000/run-stream",
-        data: {
-          code: currentCode,
-        },
-      });
-
-      // const renderer_response = await fetch("http://localhost:8000/run", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ code: codeToRun }),
-      // });
-      //
-      // if (renderer_response.ok) {
-      //   const blob = await renderer_response.blob();
-      //   setVideoUrl(URL.createObjectURL(blob));
-      //   setLoading(false);
-      //   setError(false);
-      //   toast.success("Rendered Successfull");
-      //   return;
-      // }
-      toast("Debugging and fixing with AI");
-
-      setError(true);
-
-      const renderer_data = await renderer_response.json();
-
-      const debug_response = await fetch("/api/ollama/debug", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: renderer_data?.code || codeToRun,
-          error: renderer_data?.error,
-        }),
-      });
-
-      if (debug_response.ok) {
-        await debug_response
-          .json()
-          .then((data) => {
-            toast("Retrying with modified code");
-            codeToRun = JSON.parse(data?.llm_output).script;
-            setCurrCode(codeToRun);
-            retry = true;
-          })
-          .catch((e) => {
-            setError(true);
-            toast.error("Internal Error, pls try after sometime");
-            console.error(e);
-          });
-      } else {
-        setLoading(false);
-        toast.message("Internal server error", {
-          description: "Retry later",
+      try {
+        const renderer_response = await axios({
+          url: "http://localhost:3000/run-stream",
+          method: "POST",
+          responseType: "blob", // success = Blob, errors handled in catch
+          data: {
+            code: codeToRun,
+          },
         });
-        console.error(debug_response);
-        return;
+
+        // Success
+        const blob = renderer_response.data;
+        const url = URL.createObjectURL(blob);
+        setVideoUrl(url);
+        setError(false);
+        setLoading(false);
+        toast.success("Rendered successfully");
+      } catch (err: any) {
+        // Error handling
+        setError(true);
+        setLoading(false);
+        toast("Debugging and fixing with AI");
+
+        let errorPayload: any = {};
+        try {
+          // If backend sent JSON error, parse it
+          const text = await err.response?.data.text();
+          errorPayload = JSON.parse(text);
+        } catch (e) {
+          console.error("Error parsing error payload", e);
+        }
+
+        const debug_response = await fetch("/api/ollama/debug", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: errorPayload?.code || codeToRun,
+            error: errorPayload?.error.stderr || err.message,
+          }),
+        });
+
+        if (debug_response.ok) {
+          await debug_response
+            .json()
+            .then((data) => {
+              toast("Retrying with modified code");
+              codeToRun = JSON.parse(data?.llm_output).script;
+              setCurrCode(codeToRun);
+              retry = true;
+            })
+            .catch((e) => {
+              setError(true);
+              toast.error("Internal Error, pls try after sometime");
+              console.error(e);
+            });
+        } else {
+          setLoading(false);
+          toast.message("Internal server error", {
+            description: "Retry later",
+          });
+          console.error(debug_response);
+          return;
+        }
       }
     }
   };

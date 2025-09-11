@@ -3,9 +3,20 @@ import { $ } from "bun";
 import { tmpdir } from "node:os";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { readdir } from "node:fs";
+import path from "node:path";
+import { readdir } from "node:fs/promises";
+import { cors } from "hono/cors";
 
 const app = new Hono();
+
+app.use(
+  "/*",
+  cors({
+    origin: "*", // allow all (or set "http://localhost:3001" for stricter)
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.post("/run-stream", async (c) => {
   const { code } = await c.req.json();
@@ -29,25 +40,28 @@ app.post("/run-stream", async (c) => {
     console.log("Content\n", fileContent);
 
     // const cliResponse = await $`python3 ${tempScriptPath}`;
-    const cliResponse = await $`manim -pql ${tempScriptPath}`.cwd(tempDirPath);
+    await $`manim -ql ${tempScriptPath}`.cwd(tempDirPath);
 
-    let media_dir = join(tempDirPath, "/media/videos");
-    let mp4_path = null;
+    let media_dir = join(tempDirPath, "/media/videos/script/480p15");
 
-    readdir(media_dir, (err, files) => {
-      if (err) {
-        console.error(err);
-        return c.json({ message: err }, 500);
-      }
+    const files = await readdir(media_dir);
 
-      console.log("Contents in", media_dir, "\n", files);
-    });
+    const checkMp4 = files.filter((file) => path.extname(file) === ".mp4");
 
-    return c.json({
-      data: await cliResponse.json(),
+    const finalPath = join(media_dir, checkMp4[0]);
+
+    const video = await readFile(finalPath);
+    return new Response(new Uint8Array(video), {
+      headers: {
+        "Content-Type": "video/mp4",
+        "Content-Disposition": "inline; filename=output.mp4",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
     });
   } catch (err) {
-    return c.json({ message: err }, 500);
+    return c.json({ code: code, error: err }, 500);
   }
 });
 
