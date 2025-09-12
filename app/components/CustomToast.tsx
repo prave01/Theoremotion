@@ -17,8 +17,12 @@ export const CustomToast = (props: { message: string }) => {
     <AnimatePresence>
       <motion.div
         initial={{ translateX: 0 }}
-        animate={{ translateX: isMoved ? 160 : 0 }}
-        exit={{ translateX: 0 }}
+        animate={
+          isMoved
+            ? { translateX: 160, opacity: 1 }
+            : { translateX: 0, opacity: 0 }
+        }
+        exit={{ translateX: 0, opacity: 0 }}
         transition={{ duration: 0.5, ease: "easeInOut", type: "spring" }}
         className="absolute right-0 flex h-10 w-[150px] items-center justify-center rounded-lg border-1 border-dashed bg-zinc-900 px-2"
       >

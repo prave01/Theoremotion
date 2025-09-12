@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
     // Generate prompt
     const buildPrompt = await openai.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",
@@ -98,7 +98,7 @@ IMPORTANT: This is for lecturing purpose and big universities like standford, II
     // Call OpenAI (Groq)
 
     const completion = openai.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",

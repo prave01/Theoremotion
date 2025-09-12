@@ -1,7 +1,5 @@
-import { OllamaEmbeddings } from "@langchain/ollama";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { pg } from "@/app/db/utils";
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +12,7 @@ export async function POST(req: Request) {
     });
 
     const buildPrompt = await openai.chat.completions.create({
-      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+      model: "qwen/qwen3-32b",
       messages: [
         {
           role: "system",
@@ -40,36 +38,27 @@ You are going to generate prompt for the given error, so the next llm will solve
     // Call OpenAI (Groq)
 
     const completion = await openai.chat.completions.create({
-      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
           content: `
-You are a Manim debugger/Error solving expert.  
-Your ONLY output must be a valid JSON object with this shape:  
+You are a Manim debugger.  
+Return output strictly as a valid JSON object in this exact format:
 
+{
+  "script": "<CORRECTED PYTHON SCRIPT>",
+  "explanation": "<WHY IT WAS WRONG AND HOW IT WAS FIXED>"
+}
 
-Here is some example python script which is closely realted to this problem
-
-OTUTPUT_FORMAT:
-{ "script": "<CORRECTED PYTHON SCRIPT>" }  
-
-Rules:  
-1. Analyze the provided Manim script carefully.  
-2. Detect syntax errors, runtime issues, or incorrect API usage.  
-3. Fix them in clean, valid Python code compatible with Manim.  
-4. The "script" value must be a complete runnable Manim file with:  
-   - "from manim import *"  
-   - Exactly ONE Scene class.  
-5. The "explanation" value must clearly describe:  
-   - What went wrong.  
-   - Why your fix solves it.  
-6. Do not introduce new complexity. Keep fixes minimal and correct.  
-7. Ensure the corrected script runs smoothly without overlap or broken animations.  
-
-Final check:  
-- Output must be ONLY the JSON object.  
-- No extra text, no comments, no markdown.  
+Rules:
+1. Analyze the provided Manim script.
+2. Fix syntax errors, runtime issues, or invalid API usage.
+3. The "script" must be a full runnable Manim file:
+   - starts with "from manim import *"
+   - exactly one Scene class
+4. Keep fixes minimal and correct, do not add extra complexity.
+5. Do not output anything outside the JSON object.
       `.trim(),
         },
         {

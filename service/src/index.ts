@@ -6,6 +6,7 @@ import { join } from "node:path";
 import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { cors } from "hono/cors";
+import { upgradeWebSocket, websocket } from "hono/bun";
 
 const app = new Hono();
 
@@ -15,6 +16,22 @@ app.use(
     origin: "*", // allow all (or set "http://localhost:3001" for stricter)
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
+app.get(
+  "/ws/console_logs",
+  upgradeWebSocket((c) => {
+    return {
+      onOpen: (evt, ws) => {
+        console.log("Client connected");
+        ws.send("Hi from server");
+      },
+      onMessage: (event, ws) => {
+        console.log("message from client:", event.data);
+        ws.send(`client saying: ${event.data}`);
+      },
+    };
   }),
 );
 
@@ -65,4 +82,8 @@ app.post("/run-stream", async (c) => {
   }
 });
 
-export default app;
+export default {
+  port: 4000,
+  fetch: app.fetch,
+  websocket,
+};

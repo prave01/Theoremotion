@@ -9,7 +9,7 @@ import { Button } from "./button";
 type CodeBlockProps = {
   language: string;
   filename: string;
-  isError: boolean;
+  isError: string | null;
   highlightLines?: number[];
 } & (
     | {
@@ -61,9 +61,11 @@ export const CodeBlock = ({
     <div
       className={cn(
         "relative z-10 flex h-full w-full max-w-[40%] rounded-lg border-2 border-dashed border-cyan-500 p-4 font-mono text-sm",
-        isError
+        isError == "error"
           ? "bg-gradient-to-t from-red-500/30 to-transparent backdrop-blur-md"
-          : "bg-black",
+          : isError == "retry"
+            ? "bg-gradient-to-t from-cyan-500/30 to-transparent backdrop-blur-md"
+            : "bg-black",
       )}
     >
       <div className="flex-col gap-2">
@@ -96,9 +98,11 @@ export const CodeBlock = ({
         )}
       </div>
       {isError ? (
-        <div className="absolute inset-0 z-10 flex h-full w-full items-center justify-center">
+        <div className="absolute inset-0 z-10 flex h-full w-full items-center justify-center brightness-75">
           <Button className="">
-            <span className="animate-pulse">Fixing</span>
+            <span className="animate-pulse">
+              {isError == "retry" ? "Rendering" : "Fixing"}
+            </span>
           </Button>
         </div>
       ) : (
@@ -116,7 +120,11 @@ export const CodeBlock = ({
           overflowY: "scroll",
           overflowX: "scroll",
         }}
-        className={cn(isError && "blur-xs", "no-scrollbar")}
+        className={cn(
+          isError == "retry" || isError == "error"
+            ? "no-scrollbar blur-xs"
+            : "no-scrollbar",
+        )}
         wrapLines={true}
         showLineNumbers={true}
         lineProps={(lineNumber) => ({
