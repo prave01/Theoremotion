@@ -16,22 +16,11 @@ export const Editor = (props: {}) => {
 
   const [currentCode, setCurrCode] = useState<string | undefined>(undefined);
 
-  const [copied, setCopied] = useState<any>();
+  const [copied, setCopied] = useState<[]>();
+
+  const [logs, setLogs] = useState<string[]>([]);
 
   const [error, setError] = useState<"retry" | "error" | null>(null);
-
-  useEffect(() => {
-    const socket = new WebSocket("ws://localhost:4000/ws/console_logs");
-
-    socket.onopen = () => {
-      console.log("Connnected to scoket");
-    };
-
-    socket.onmessage = ({ data }) => {
-      console.log("this is from server:", data);
-    };
-    return () => socket.close();
-  }, []);
 
   const handleSubmit = async () => {
     if (prompt == "" || prompt == null) {
@@ -69,90 +58,80 @@ export const Editor = (props: {}) => {
 
     while (retry) {
       retry = false;
-
       try {
+        console.log(retry);
         setError("retry");
-        const renderer_response = await axios({
-          url: "http://localhost:4000/run-stream",
-          method: "POST",
-          responseType: "blob",
-          data: {
-            code: codeToRun,
-          },
-        });
 
-        // Success
-        const blob = renderer_response.data;
-        const url = URL.createObjectURL(blob);
-        setVideoUrl(url);
-        setError(null);
-        setLoading(false);
-        toast.success("Rendered successfully");
-      } catch (err: any) {
-        // Error handling
-        setError("error");
-        setLoading(false);
-        toast("Debugging and fixing with AI");
+        const socket = new WebSocket("ws://localhost:4000/ws/run-stream");
 
-        let errorPayload: any = {};
+        socket.onopen = () => {
+          console.log("Connected to backend ");
+          socket.send(JSON.stringify({ code: codeToRun }));
+        };
 
-        try {
-          let text: string | undefined;
+        socket.onmessage = async (event) => {
+          try {
+            const data = JSON.parse(event.data);
 
-          if (err.response?.data instanceof Blob) {
-            text = await err.response.data.text();
-          } else if (typeof err.response?.data === "string") {
-            text = err.response.data;
-          } else if (typeof err.response?.data === "object") {
-            errorPayload = err.response.data;
-          }
+            if (data.video) {
+              // Convert base64 back to blob
+              const byteArray = Uint8Array.from(atob(data.video), (c) =>
+                c.charCodeAt(0),
+              );
+              const blob = new Blob([byteArray], { type: "video/mp4" });
+              const url = URL.createObjectURL(blob);
+              setVideoUrl(url);
+              setLoading(false);
+              toast.success("Rendered successfully");
+              return;
+            } else if (data.error) {
+              setLogs((prev) => [...prev, `[error] ${data.error}`]);
+              const debug_response = await fetch("/api/ollama/debug", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  code: data.code || codeToRun,
+                  error: data.error,
+                }),
+              });
 
-          if (text) {
-            try {
-              errorPayload = JSON.parse(text);
-            } catch (parseErr) {
-              console.error("Response not valid JSON, got:", text);
+              if (debug_response.ok) {
+                await debug_response
+                  .json()
+                  .then((data) => {
+                    toast("Retrying with modified code");
+                    setError("retry");
+                    codeToRun = JSON.parse(data?.llm_output).script;
+                    setCurrCode(codeToRun);
+                    retry = true;
+                  })
+                  .catch((e) => {
+                    setError("error");
+                    toast.error("Internal Error, pls try after sometime");
+                    console.error(e);
+                  });
+                socket.close();
+                retry = true;
+              } else {
+                setLoading(false);
+                setError(null);
+                setCurrCode(undefined);
+                toast.message("Internal server error", {
+                  description: "Retry later",
+                });
+                socket.close();
+                return;
+              }
             }
+          } catch {
+            // Plain text logs
+            setLogs((prev) => [...prev, event.data]);
+            console.log("Logs: ", event.data);
           }
-
-          console.log("Error payload:", errorPayload);
-        } catch (e) {
-          console.error("Error parsing error payload", e);
-        }
-
-        const debug_response = await fetch("/api/ollama/debug", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code: errorPayload?.code || codeToRun,
-            error: errorPayload?.error?.stderr || err.message,
-          }),
-        });
-
-        if (debug_response.ok) {
-          await debug_response
-            .json()
-            .then((data) => {
-              toast("Retrying with modified code");
-              setError("retry");
-              codeToRun = JSON.parse(data?.llm_output).script;
-              setCurrCode(codeToRun);
-              retry = true;
-            })
-            .catch((e) => {
-              setError("error");
-              toast.error("Internal Error, pls try after sometime");
-              console.error(e);
-            });
-        } else {
-          setLoading(false);
-          setError(null);
-          setCurrCode(undefined);
-          toast.message("Internal server error", {
-            description: "Retry later",
-          });
-          return;
-        }
+        };
+      } catch (err: any) {
+        retry = true;
+        console.error(err);
       }
     }
   };
