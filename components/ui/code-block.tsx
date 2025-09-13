@@ -40,15 +40,6 @@ export const CodeBlock = ({
 
   const tabsExist = tabs.length > 0;
 
-  const copyToClipboard = async () => {
-    const textToCopy = tabsExist ? tabs[activeTab].code : code;
-    if (textToCopy) {
-      await navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   const activeCode = tabsExist ? tabs[activeTab].code : code;
   const activeLanguage = tabsExist
     ? tabs[activeTab].language || language
@@ -57,10 +48,20 @@ export const CodeBlock = ({
     ? tabs[activeTab].highlightLines || []
     : highlightLines;
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // reset after 2s
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
   return (
     <div
       className={cn(
-        "relative z-10 flex h-full w-full max-w-[40%] rounded-lg border-2 border-dashed border-cyan-500 p-4 font-mono text-sm",
+        "relative z-10 flex h-full w-full min-w-[50%] rounded-lg border-2 border-dashed border-cyan-500 p-4 font-mono text-sm",
         isError == "error"
           ? "bg-gradient-to-t from-red-500/30 to-transparent backdrop-blur-md"
           : isError == "retry"
@@ -68,6 +69,17 @@ export const CodeBlock = ({
             : "bg-black",
       )}
     >
+      {code !== undefined && code !== "" ? (
+        <Button
+          onClick={() => copyToClipboard(code as string)}
+          className="absolute top-2 right-2"
+        >
+          {copied ? "copied!" : "copy"}
+        </Button>
+      ) : (
+        ""
+      )}
+
       <div className="flex-col gap-2">
         {tabsExist && (
           <div className="flex">

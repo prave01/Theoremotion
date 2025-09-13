@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { $ } from "bun";
 import { tmpdir } from "node:os";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { extname, join } from "node:path";
 import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { cors } from "hono/cors";
 import { upgradeWebSocket, websocket } from "hono/bun";
 import { error } from "node:console";
+import { exit } from "node:process";
 
 const app = new Hono();
 
@@ -82,7 +83,7 @@ app.get(
                   const chunk = dec.decode(value);
                   console.log("Error Logs: \n", dec.decode(value));
                   errorBuffer += chunk;
-                  ws.send(JSON.stringify({ type: "stderr", data: chunk }));
+                  ws.send(chunk);
                 }
               }
             } finally {
@@ -92,11 +93,12 @@ app.get(
 
           // Wait for process completion (single point of truth)
           const exitCode = await proc.exited;
+
           ws.send(`[server] Manim exited with code ${exitCode}`);
 
-          if (exitCode === 0 && errorBuffer?.length === 0) {
+          if (exitCode == 0) {
             // Locate generated mp4 file
-            const media_dir = join(tempDirPath, "/media/videos/script/480p15");
+            const media_dir = join(tempDirPath, "media/videos/script/480p15");
             const files = await readdir(media_dir);
             const mp4 = files.find((f) => path.extname(f) === ".mp4");
 
@@ -113,18 +115,15 @@ app.get(
             }
           } else {
             // Send final error only when something went wrong
-            console.log("Stoppped at");
-            console.log(await proc.stderr.getReader());
-            console.log("out", proc.stdout);
+            console.log("Error catched here and the error is \n", errorBuffer);
             ws.send(
               JSON.stringify({
                 code: code,
-                error: proc.stderr,
+                error: errorBuffer,
               }),
             );
+            ws.close();
           }
-          // Always close once finished
-          ws.close();
         } catch (err: any) {
           ws.send(JSON.stringify({ code: code, error: err }));
           ws.close();

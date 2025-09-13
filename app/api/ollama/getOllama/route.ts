@@ -16,36 +16,21 @@ export async function POST(req: Request) {
       baseURL: "https://api.groq.com/openai/v1",
     });
 
-    const client = new InferenceClient(process.env.HUGGING_FACE);
+    // const client = new InferenceClient(process.env.HUGGING_FACE);
 
-    const output = await client.featureExtraction({
-      model: "mixedbread-ai/mxbai-embed-large-v1",
-      inputs: data?.query,
-      provider: "hf-inference",
+    // const output = await client.featureExtraction({
+    //   model: "mixedbread-ai/mxbai-embed-large-v1",
+    //   inputs: data?.query,
+    //   provider: "hf-inference",
+    // });
+
+    const embeddings = new OllamaEmbeddings({
+      model: "mxbai-embed-large:latest",
     });
 
-    // const model = new HuggingFaceTransformersEmbeddings({
-    //   model: "Xenova/all-MiniLM-L12-v2",
-    // });
+    const output = await embeddings.embedQuery(data?.query);
 
-    // const model = await tf.loadGraphModel(
-    //   "https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1",
-    // );
-    //
-    // const embeddings = await model.embed([data?.query]);
-    //
-    // const queryEmbedding = await model.embedQuery(data?.query);
-    //
     const vectorString = `[${output.join(",")}]`;
-    // Get the embedding array
-    // const queryEmbedding = await embeddingModel.embeddings.create({
-    // 	model: "text-embedding-3-small",
-    // 	input: data?.query,
-    // });
-
-    // const vectorString = `[${queryEmbedding.data[0].embedding.join(",")}]`;
-
-    // Retrieve most relevant context from Postgres
     const results = await pg`
       SELECT id, prompt, script
       FROM manim_finetune_data
@@ -63,7 +48,7 @@ export async function POST(req: Request) {
 
     // Generate prompt
     const buildPrompt = await openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: "gemma2-9b-it",
       messages: [
         {
           role: "system",
@@ -98,7 +83,7 @@ IMPORTANT: This is for lecturing purpose and big universities like standford, II
     // Call OpenAI (Groq)
 
     const completion = openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
       messages: [
         {
           role: "system",
@@ -109,6 +94,9 @@ Your ONLY output must be a valid JSON object with this shape:
 { "script": "<COMPLETE PYTHON SCRIPT>" }  
 
 You can use this knowledge base: ${context},  
+
+no overlaps between animations, make sure the previous animation vanished before playing the next scene
+make sure everything fits inside the view width and height
 
 Rules:  
 1. The value of "script" must be a full, runnable Manim Python file with:  
@@ -162,7 +150,7 @@ Final check:
       ],
       temperature: 1,
       top_p: 0.9,
-      reasoning_effort: "low",
+      // reasoning_effort: "low",
       response_format: { type: "json_object" },
     });
 

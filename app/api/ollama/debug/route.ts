@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     });
 
     const buildPrompt = await openai.chat.completions.create({
-      model: "qwen/qwen3-32b",
+      model: "llama-3.1-8b-instant",
       messages: [
         {
           role: "system",
@@ -38,38 +38,63 @@ You are going to generate prompt for the given error, so the next llm will solve
     // Call OpenAI (Groq)
 
     const completion = await openai.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
         {
           role: "system",
           content: `
-You are a Manim debugger.  
-Return output strictly as a valid JSON object in this exact format:
+You are a Manim debugger assistant.  
+Return output strictly as a single JSON object and nothing else.
 
+Output schema:
 {
-  "script": "<CORRECTED PYTHON SCRIPT>",
-  "explanation": "<WHY IT WAS WRONG AND HOW IT WAS FIXED>"
+  "script": "<FULL_CORRECTED_MANIM_PYTHON_SCRIPT>",
+  "diagnostics": ["<short strings explaining fixes performed>"],
+  "confidence": "<low|medium|high>"
 }
 
 Rules:
-1. Analyze the provided Manim script.
-2. Fix syntax errors, runtime issues, or invalid API usage.
-3. The "script" must be a full runnable Manim file:
-   - starts with "from manim import *"
-   - exactly one Scene class
-4. Keep fixes minimal and correct, do not add extra complexity.
-5. Do not output anything outside the JSON object.
+1. Input: an error message and the original Manim script.
+2. Return a complete runnable Manim file in "script":
+   - Must start with: "from manim import *"
+   - Must contain exactly one "class <Name>(Scene):" definition (or subclass of Scene).
+   - The file must be self-contained (imports and the one Scene only).
+3. Fix only what is necessary:
+   - syntax errors
+   - incorrect API usage
+   - name mismatches
+   - missing imports
+   - indentation issues
+   - runtime bugs preventing execution
+4. Do NOT add unrelated features, comments, or explanations outside diagnostics.
+5. "diagnostics" = short actionable items like:
+   - "Fixed missing import: import numpy as np"
+   - "Corrected scene class name from X to Y"
+   - "Fixed indentation on line 23"
+6. "confidence":
+   - "high" → runs cleanly
+   - "medium" → risky assumptions made
+   - "low" → could not fully infer missing context
+7. If no valid script possible, set "script" = "" and add reason in diagnostics.
+8. Keep output minimal and strictly JSON (no markdown, no prose).
       `.trim(),
         },
         {
           role: "user",
           content: `
-Help me fix this Manim code:\n\n${data?.error}\n
-Here is something that may help:\n\n${FinalPrompt}`,
+Error:
+${data?.error}
+
+Code:
+${data?.code}
+
+Additional Hints:
+${FinalPrompt}
+      `.trim(),
         },
       ],
-      temperature: 0.4,
-      top_p: 0.9,
+      temperature: 0.3,
+      top_p: 0.85,
       response_format: { type: "json_object" },
     });
 
