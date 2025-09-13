@@ -204,9 +204,11 @@ export const Editor = (props: {}) => {
         </div>
         <div ref={logsEndRef} />
       </div>
+
       <div className="relative z-20 flex h-[500px] w-5xl items-center justify-center gap-x-4 text-sm">
         {" "}
         <div className="relative flex h-full w-full flex-col items-start gap-2 transition-all duration-75 ease-in-out">
+          <div className="h-15 w-full rounded-lg bg-purple-200"></div>
           <video
             loop
             autoPlay={videoUrl != undefined ? true : false}
