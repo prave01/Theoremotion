@@ -6,6 +6,9 @@ import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { cors } from "hono/cors";
 import { upgradeWebSocket, websocket } from "hono/bun";
+import { config } from "dotenv";
+
+config();
 
 const app = new Hono();
 
@@ -130,8 +133,10 @@ app.get(
   }),
 );
 
+const port = Number(process.env.PORT) || 4000;
+
 export default {
-  port: 4000,
+  port: port,
   fetch: app.fetch,
   websocket,
 };
