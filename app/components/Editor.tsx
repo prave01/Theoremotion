@@ -101,7 +101,9 @@ export const Editor = () => {
       });
 
       const connect = (script: string, attempt = 1) => {
-        const socket = new WebSocket("ws://localhost:4000/ws/run-stream");
+        const socket = new WebSocket(
+          "ws:theoremotion.onrender.com/ws/run-stream",
+        );
 
         socket.onopen = () => {
           console.log("Connected to backend");
