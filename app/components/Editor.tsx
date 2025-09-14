@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useRef, useState } from "react";
 import { CodeBlock } from "@/components/ui/code-block";
 import { toast } from "sonner";
-import axios from "axios";
 import {
   Select,
   SelectContent,
@@ -14,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const Editor = (props: {}) => {
+export const Editor = () => {
   const [prompt, setPrompt] = useState<string | null>(null);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -22,8 +21,6 @@ export const Editor = (props: {}) => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   const [currentCode, setCurrCode] = useState<string | undefined>(undefined);
-
-  const [copied, setCopied] = useState<[]>();
 
   const [logs, setLogs] = useState<string[]>([]);
 
@@ -39,13 +36,11 @@ export const Editor = (props: {}) => {
   useEffect(() => {
     if (logs.length === 0) return;
 
-    // If backlog exists, dump instantly (skip typing)
     if (logs.length - displayedLogs.length > 1) {
       setDisplayedLogs(logs.slice(0, logs.length - 1));
       setCurrentLine("");
     }
 
-    // Only animate the newest line
     if (logs.length > displayedLogs.length && typingRef.current === null) {
       const nextLine = logs[logs.length - 1];
       let i = 0;
@@ -62,7 +57,6 @@ export const Editor = (props: {}) => {
           setDisplayedLogs((prev) => [...prev, nextLine]);
           setCurrentLine("");
 
-          // ✅ scroll only after a full line is done
           logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
       };

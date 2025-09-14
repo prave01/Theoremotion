@@ -1,5 +1,4 @@
 import { pg } from "@/app/db/utils";
-import { NeonPostgres } from "@langchain/community/vectorstores/neon";
 import { OllamaEmbeddings } from "@langchain/ollama";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { NextResponse } from "next/server";
@@ -22,7 +21,8 @@ export async function POST(req: Request) {
 
       const text = await file.text();
 
-      let jsonData: Array<{ query: string; answer: string }> = JSON.parse(text);
+      const jsonData: Array<{ query: string; answer: string }> =
+        JSON.parse(text);
 
       console.log("JSON parsed\n");
 
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ message: "No inputType provided" });
-  } catch (e: any) {
+  } catch (e) {
     console.error("Error in POST handler:", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }

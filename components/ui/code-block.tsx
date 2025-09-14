@@ -29,7 +29,6 @@ type CodeBlockProps = {
 
 export const CodeBlock = ({
   language,
-  filename,
   isError,
   code,
   highlightLines = [],
@@ -71,10 +70,10 @@ export const CodeBlock = ({
     >
       {code !== undefined && code !== "" ? (
         <Button
-          onClick={() => copyToClipboard(code as string)}
-          className="absolute top-2 right-2"
+          onClick={() => copyToClipboard(code)} // 👈 explicitly pass your text
+          className="flex items-center gap-1 bg-purple-500 font-sans text-xs text-zinc-400 transition-colors hover:text-zinc-200"
         >
-          {copied ? "copied!" : "copy"}
+          {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
         </Button>
       ) : (
         ""
@@ -95,17 +94,6 @@ export const CodeBlock = ({
                 {tab.name}
               </button>
             ))}
-          </div>
-        )}
-        {!tabsExist && filename && (
-          <div className="flex items-center justify-between py-2">
-            <div className="text-xs text-zinc-400">{filename}</div>
-            <button
-              onClick={copyToClipboard}
-              className="flex items-center gap-1 font-sans text-xs text-zinc-400 transition-colors hover:text-zinc-200"
-            >
-              {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
-            </button>
           </div>
         )}
       </div>

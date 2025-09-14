@@ -9,7 +9,7 @@ const pacifico = Pacifico({
   weight: ["400"],
 });
 
-export const HeroSection = (props: {}) => {
+export const HeroSection = () => {
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center gap-y-10">
       <motion.div
@@ -67,7 +67,7 @@ export const HeroSection = (props: {}) => {
         >
           {" "}
           <Button className="m-0 h-full w-full cursor-pointer rounded-md border-none p-2 px-5 text-xl font-normal backdrop-blur-md hover:text-pink-200 hover:backdrop-blur-lg">
-            Let's Animate
+            Let&lsquo;s Animate
           </Button>
         </motion.div>
       </a>

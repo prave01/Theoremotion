@@ -101,7 +101,7 @@ ${FinalPrompt}
     return NextResponse.json({
       llm_output: completion.choices[0].message.content,
     });
-  } catch (e: any) {
+  } catch (e) {
     console.error("error:", e);
     return NextResponse.json({ error: e?.toString() }, { status: 400 });
   }

@@ -1,9 +1,6 @@
-import { OllamaEmbeddings } from "@langchain/ollama";
 import { NextResponse } from "next/server";
 import { pg } from "@/app/db/utils";
 import OpenAI from "openai";
-import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
-import * as tf from "@tensorflow/tfjs-node";
 import { InferenceClient } from "@huggingface/inference";
 
 export async function POST(req: Request) {
@@ -24,6 +21,7 @@ export async function POST(req: Request) {
       provider: "hf-inference",
     });
 
+    // Run local embedding model
     // const embeddings = new OllamaEmbeddings({
     //   model: "mxbai-embed-large:latest",
     // });
@@ -39,7 +37,7 @@ export async function POST(req: Request) {
     `;
 
     const context = results
-      .map((row: any, idx: number) => {
+      .map((row, idx: number) => {
         const safeScript = row.script.replace(/{/g, "{{").replace(/}/g, "}}");
 
         return `Example ${idx + 1}:\nPrompt: ${row.prompt}\nScript:\n${safeScript}`;
@@ -157,7 +155,7 @@ Final check:
     const content = (await completion).choices[0].message.content;
 
     return NextResponse.json({ llm_output: content }, { status: 200 });
-  } catch (e: any) {
+  } catch (e) {
     console.error("", e);
     return NextResponse.json({ error: e?.toString() }, { status: 400 });
   }
