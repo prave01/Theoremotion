@@ -130,8 +130,10 @@ app.get(
   }),
 );
 
+const port = Number(process.env.PORT) || 4000;
+
 export default {
-  port: 4000,
+  port,
   fetch: app.fetch,
   websocket,
 };
