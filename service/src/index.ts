@@ -6,16 +6,13 @@ import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { cors } from "hono/cors";
 import { upgradeWebSocket, websocket } from "hono/bun";
-import { config } from "dotenv";
-
-config();
 
 const app = new Hono();
 
 app.use(
   "/*",
   cors({
-    origin: "https://theoremotion.vercel.app",
+    origin: "https://theoremotion.vercel.app", // allow all (or set "http://localhost:3001" for stricter)
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
   }),
@@ -133,10 +130,8 @@ app.get(
   }),
 );
 
-const port = Number(process.env.PORT) || 4000;
-
 export default {
-  port: port,
+  port: 4000,
   fetch: app.fetch,
   websocket,
 };

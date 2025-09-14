@@ -102,7 +102,7 @@ export const Editor = () => {
 
       const connect = (script: string, attempt = 1) => {
         const socket = new WebSocket(
-          "wss:theoremotion.onrender.com/ws/run-stream",
+          "wss://theoremotion.vercel.app/ws/run-stream",
         );
 
         socket.onopen = () => {
