@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     });
 
     const buildPrompt = await openai.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "moonshotai/kimi-k2-instruct-0905",
       messages: [
         {
           role: "system",
@@ -38,7 +38,7 @@ You are going to generate prompt for the given error, so the next llm will solve
     // Call OpenAI (Groq)
 
     const completion = await openai.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      model: "openai/gpt-oss-20b",
       messages: [
         {
           role: "system",

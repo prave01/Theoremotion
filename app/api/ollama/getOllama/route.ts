@@ -16,19 +16,19 @@ export async function POST(req: Request) {
       baseURL: "https://api.groq.com/openai/v1",
     });
 
-    // const client = new InferenceClient(process.env.HUGGING_FACE);
+    const client = new InferenceClient(process.env.HUGGING_FACE);
 
-    // const output = await client.featureExtraction({
-    //   model: "mixedbread-ai/mxbai-embed-large-v1",
-    //   inputs: data?.query,
-    //   provider: "hf-inference",
-    // });
-
-    const embeddings = new OllamaEmbeddings({
-      model: "mxbai-embed-large:latest",
+    const output = await client.featureExtraction({
+      model: "mixedbread-ai/mxbai-embed-large-v1",
+      inputs: data?.query,
+      provider: "hf-inference",
     });
 
-    const output = await embeddings.embedQuery(data?.query);
+    // const embeddings = new OllamaEmbeddings({
+    //   model: "mxbai-embed-large:latest",
+    // });
+    //
+    // const output = await embeddings.embedQuery(data?.query);
 
     const vectorString = `[${output.join(",")}]`;
     const results = await pg`
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     // Generate prompt
     const buildPrompt = await openai.chat.completions.create({
-      model: "gemma2-9b-it",
+      model: data?.model,
       messages: [
         {
           role: "system",
@@ -83,7 +83,7 @@ IMPORTANT: This is for lecturing purpose and big universities like standford, II
     // Call OpenAI (Groq)
 
     const completion = openai.chat.completions.create({
-      model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+      model: data?.model,
       messages: [
         {
           role: "system",

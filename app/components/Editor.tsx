@@ -6,6 +6,13 @@ import { useEffect, useRef, useState } from "react";
 import { CodeBlock } from "@/components/ui/code-block";
 import { toast } from "sonner";
 import axios from "axios";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Editor = (props: {}) => {
   const [prompt, setPrompt] = useState<string | null>(null);
@@ -26,6 +33,8 @@ export const Editor = (props: {}) => {
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState("");
   const typingRef = useRef<number | null>(null);
+
+  const [model, setModel] = useState<string>("openai/gpt-oss-120b");
 
   useEffect(() => {
     if (logs.length === 0) return;
@@ -78,10 +87,11 @@ export const Editor = (props: {}) => {
     try {
       console.log("Started :D");
       setLogs(["Animation started :)"]);
+      toast.success(`${model} selected`);
       const genScript = await fetch("/api/ollama/getOllama", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: prompt }),
+        body: JSON.stringify({ query: prompt, model: model }),
       });
 
       if (!genScript.ok) {
@@ -93,7 +103,7 @@ export const Editor = (props: {}) => {
       setCurrCode(codeToRun);
 
       toast.message("Script generated successfully", {
-        description: "By Openai/gpt-oss-120B",
+        description: `By ${model}`,
       });
 
       const connect = (script: string, attempt = 1) => {
@@ -178,9 +188,14 @@ export const Editor = (props: {}) => {
       setLoading(false);
       setCurrCode(undefined);
       toast.message("Internal server error", {
-        description: "Retry later",
+        description: "Try with different model",
       });
     }
+  };
+
+  const handleSelect = (value: string) => {
+    console.log("Selected model:", value);
+    setModel(value);
   };
   return (
     <div
@@ -207,16 +222,42 @@ export const Editor = (props: {}) => {
 
       <div className="relative z-20 flex h-[500px] w-5xl items-center justify-center gap-x-4 text-sm">
         {" "}
-        <div className="relative flex h-full w-full flex-col items-start gap-2 transition-all duration-75 ease-in-out">
-          <div className="h-15 w-full rounded-lg bg-purple-200"></div>
+        <div className="relative flex h-full w-full flex-col items-start gap-1 transition-all duration-75 ease-in-out">
+          <div className="h-18 w-full rounded-lg border-2 border-zinc-800 bg-black px-2 py-2">
+            <Select onValueChange={handleSelect} value={model}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Model" />
+              </SelectTrigger>
+              <SelectContent className="border-none border-zinc-800 bg-black text-purple-300">
+                <SelectItem
+                  value="openai/gpt-oss-120b"
+                  className="focus:bg-zinc-800 focus:text-purple-300"
+                >
+                  openai/gpt-oss-120b
+                </SelectItem>
+                <SelectItem
+                  className="focus:bg-zinc-800 focus:text-purple-300"
+                  value="openai/gpt-oss-20b"
+                >
+                  openai/gpt-oss-20b
+                </SelectItem>
+                <SelectItem
+                  className="focus:bg-zinc-800 focus:text-purple-300"
+                  value="meta-llama/llama-4-maverick-17b-128e-instruct"
+                >
+                  meta-llama/llama-4-maverick-17b-128e-instruct
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <video
             loop
             autoPlay={videoUrl != undefined ? true : false}
             controls
-            className="h-full w-full rounded-lg"
+            className="h-full max-h-[400px] w-full rounded-lg border-2 border-purple-500 bg-black"
             src={videoUrl || undefined}
           />{" "}
-          <div className="h-auto rounded-2xl border-1 border-zinc-800 p-2">
+          <div className="h-auto rounded-2xl border-1 border-zinc-800 bg-black p-2">
             <Textarea
               value={prompt || ""}
               onChange={(e) => {

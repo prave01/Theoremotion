@@ -4,8 +4,14 @@ import { HeroSection } from "./components/HeroSection";
 export default function Home() {
   return (
     <div className="relative min-h-screen w-full bg-black">
+      <div className="absolute inset-0 flex h-full w-full items-center justify-center bg-black text-center text-4xl font-semibold tracking-tight text-white xl:hidden">
+        <span>
+          {" "}
+          Come on bro I have life <br /> Please visit this in large screen
+        </span>
+      </div>
       <div
-        className="absolute inset-0 -top-10 z-0"
+        className="absolute inset-0 -top-10 z-0 hidden xl:flex"
         style={{
           background: `
           radial-gradient(ellipse 120% 80% at 70% 20%, rgba(255, 20, 147, 0.15), transparent 50%),
@@ -16,7 +22,7 @@ export default function Home() {
         `,
         }}
       />
-      <div className="relative z-10 flex h-full flex-col text-4xl font-semibold text-white">
+      <div className="relative z-10 hidden h-full flex-col text-4xl font-semibold text-white xl:flex">
         <HeroSection />
         <Editor />
       </div>
