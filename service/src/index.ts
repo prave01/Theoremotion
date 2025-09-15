@@ -16,7 +16,7 @@ const app = new Hono();
 app.use(
   "/*",
   cors({
-    origin: "https://theoremotion.vercel.app", // allow all (or set "http://localhost:3001" for stricter)
+    origin: "https://theoremotion.vercel.app",
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
   }),
