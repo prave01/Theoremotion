@@ -71,7 +71,7 @@ export const CodeBlock = ({
       {code !== undefined && code !== "" ? (
         <Button
           onClick={() => copyToClipboard(code)} // 👈 explicitly pass your text
-          className="flex items-center gap-1 bg-purple-500 font-sans text-xs text-zinc-400 transition-colors hover:text-zinc-200"
+          className="flex items-center gap-1 absolute right-2 top-2 font-sans text-xs text-zinc-400 transition-colors hover:text-zinc-200"
         >
           {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
         </Button>
@@ -87,8 +87,8 @@ export const CodeBlock = ({
                 key={index}
                 onClick={() => setActiveTab(index)}
                 className={`px-3 !py-2 font-sans text-xs transition-colors ${activeTab === index
-                    ? "text-white"
-                    : "text-zinc-400 hover:text-zinc-200"
+                  ? "text-white"
+                  : "text-zinc-400 hover:text-zinc-200"
                   }`}
               >
                 {tab.name}
