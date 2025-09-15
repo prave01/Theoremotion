@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Theoremotion
 
-## Getting Started
+## Description:
+Theoremotion is a web application designed to [**TODO: Add a more specific description here based on the project's actual purpose. For example: "explore and visualize mathematical theorems with interactive motion graphics," or "assist in the creation and validation of logical proofs."**]. It leverages Next.js for a responsive frontend, a custom API for interacting with Ollama (likely for language model integrations or local AI), and a database for managing embeddings.
 
-First, run the development server:
+## Features:
+*   **Interactive Theorem Visualization:** (if applicable) Visualize complex mathematical theorems through dynamic and interactive motion graphics.
+*   **AI-driven Manim Animation Generation:** Dynamically generate and render high-quality mathematical animations using Manim, driven by AI-generated Python scripts.
+*   **Real-time Animation Streaming:** Stream the progress and final output of Manim animations in real-time via WebSocket connections.
+*   **Ollama Integration:** Utilize the power of local language models (via Ollama) for [**TODO: Specify Ollama's role, e.g., "natural language processing of mathematical statements," "generating explanations," or "assisting with proof construction."**].
+*   **Vector Embeddings:** Efficiently store and retrieve knowledge or contextual information using database embeddings.
+*   **Modern Web Stack:** Built with Next.js, React, and TypeScript for a robust and scalable application.
+*   **[TODO: Add more specific features based on the application's functionality]**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Technologies Used:
+*   **Frontend:**
+    *   Next.js
+    *   React
+    *   TypeScript
+    *   Tailwind CSS (or similar for styling based on `globals.css` and `components/ui` )
+*   **Backend/API:**
+    *   Next.js API Routes
+    *   Ollama (for local LLM interactions)
+    *   Hono.js (for the animation rendering service)
+    *   Manim (for mathematical animation generation)
+    *   [**TODO: Specify database technology, e.g., "PostgreSQL," "MongoDB," "SQLite"**]
+    *   [**TODO: Add any other backend frameworks/libraries if applicable**]
+*   **Tooling:**
+    *   Bun (package manager, based on `bun.lock` file)
+    *   ESLint
+    *   Prettier
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup and Installation:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/theoremotion.git
+    cd theoremotion
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2.  **Install Dependencies:**
+    This project uses `bun` as its package manager.
+    ```bash
+    bun install
+    ```
 
-## Learn More
+3.  **Environment Variables:**
+    Create a `.env.local` file in the root directory and add necessary environment variables.
+    ```
+    # Example:
+    OLLAMA_API_URL=http://localhost:11434
+    DATABASE_URL="[TODO: Your Database Connection String]"
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+4.  **Database Setup:**
+    [**TODO: Add specific instructions for database migration/setup, e.g., `npx prisma migrate dev` if using Prisma**]
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5.  **Run Ollama (if not already running):**
+    Ensure Ollama is running on your system, or follow its installation instructions.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+6.  **Run the Development Server:**
+    ```bash
+    bun run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Deploy on Vercel
+## Project Structure:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+*   `app/`: Main Next.js application, including pages, components, and API routes.
+    *   `api/`: Backend API routes for database embeddings and Ollama interactions.
+    *   `components/`: React components used across the application.
+    *   `db/`: Database utility functions.
+*   `components/ui/`: Reusable UI components (shadcn/ui or similar).
+*   `lib/`: Utility functions.
+*   `public/`: Static assets.
+*   `service/`: A dedicated backend service responsible for executing AI-generated Python scripts (Manim animations) and streaming the rendered video output. It utilizes Hono.js for its API and Bun for process management.
+    *   `src/index.ts`: The entry point for the Hono.js service, handling WebSocket connections for real-time script execution and video streaming, and a POST endpoint for direct video requests.
+    *   `Dockerfile`: Defines the containerization environment for the service.
+*   `README.md`: This file.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing:
+[**TODO: Add contribution guidelines if applicable**]
+
+## License:
+[**TODO: Add licensing information**]
