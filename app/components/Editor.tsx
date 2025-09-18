@@ -75,9 +75,16 @@ export const Editor = () => {
       return;
     }
 
+    setLogs([]);
+    setDisplayedLogs([]);
+    setCurrentLine("");
+    if (typingRef.current) {
+      cancelAnimationFrame(typingRef.current);
+      typingRef.current = null;
+    }
+
     setLoading(true);
     let codeToRun = currentCode;
-
     try {
       console.log("Started :D");
       setLogs(["Animation started :)"]);
