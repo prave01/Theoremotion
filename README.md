@@ -1,18 +1,18 @@
-# ✨ Theoremotion: Dynamic Mathematical Animation Platform ✨
+#  Theoremotion: Dynamic Mathematical Animation Platform 
 
 ## Description:
 Theoremotion is an web application designed to **explore and visualize mathematical theorems with interactive motion graphics**. It leverages a powerful Next.js frontend, custom APIs for orchestrating local AI capabilities via Ollama, and a robust vector database for managing embeddings. At its core, Theoremotion features **AI-driven generation and debugging of Manim animation scripts**, enabling users to bring complex mathematical concepts to life with ease.
 
 ## 🚀 Features:
 *   **Interactive Theorem Visualization:** Dive deep into complex mathematical theorems through dynamic and interactive motion graphics, making abstract concepts tangible and understandable.
-*   **🧠 AI-Powered Manim Script Generation:** Dynamically generate high-quality, lecture-ready mathematical animations using Manim. Our innovative two-stage LLM prompting system, enhanced by a vector database for contextual relevance, translates natural language prompts into precise Python (Manim) scripts.
-*   **🐞 AI-Assisted Script Debugging:** Automatically identify and fix issues in generated Manim scripts. Our LLM-powered debugging mechanism provides corrected scripts, detailed diagnostics, and confidence levels, ensuring smooth animation rendering.
+*   **AI-Powered Manim Script Generation:** Dynamically generate high-quality, lecture-ready mathematical animations using Manim. Our innovative two-stage LLM prompting system, enhanced by a vector database for contextual relevance, translates natural language prompts into precise Python (Manim) scripts.
+*   **AI-Assisted Script Debugging:** Automatically identify and fix issues in generated Manim scripts. Our LLM-powered debugging mechanism provides corrected scripts, detailed diagnostics, and confidence levels, ensuring smooth animation rendering.
 *   **⚡ Real-time Animation Streaming:** Experience the creation process in real-time. Stream the progress and final MP4 output of your Manim animations directly to your browser via WebSocket connections.
-*   **🌌 Ollama Integration:** Harness the power of local language models (via Ollama) for diverse tasks such as natural language processing of mathematical statements, generating insightful explanations, or assisting with proof construction.
-*   **📊 Vector Embeddings:** Efficiently store and retrieve a vast knowledge base of mathematical prompts, Manim scripts, and their vector embeddings. This powers intelligent context-aware script generation and rapid information retrieval.
+*   **Ollama Integration:** Harness the power of local language models (via Ollama) for diverse tasks such as natural language processing of mathematical statements, generating insightful explanations, or assisting with proof construction.
+*   **Vector Embeddings:** Efficiently store and retrieve a vast knowledge base of mathematical prompts, Manim scripts, and their vector embeddings. This powers intelligent context-aware script generation and rapid information retrieval.
 *   **🌐 Modern Web Stack:** Built with Next.js, React, and TypeScript, providing a robust, scalable, and highly responsive application experience.
 
-## 🛠️ Technologies Used:
+## Technologies Used:
 *   **Frontend:**
     *   Next.js: React framework for production-grade applications.
     *   React: A declarative, component-based JavaScript library for building user interfaces.
@@ -31,7 +31,7 @@ Theoremotion is an web application designed to **explore and visualize mathemati
     *   ESLint: For maintaining code quality and consistency.
     *   Prettier: An opinionated code formatter.
 
-## 🚀 Setup and Installation:
+##  Setup and Installation:
 
 1.  **Clone the repository:**
     ```bash
@@ -79,7 +79,7 @@ Theoremotion is an web application designed to **explore and visualize mathemati
         ```
         This service will typically run on port `4000` (configurable via `PORT` environment variable).
 
-## 📁 Project Structure:
+##  Project Structure:
 
 *   `app/`: The core Next.js application.
     *   `api/`: Defines backend API routes.
@@ -96,7 +96,7 @@ Theoremotion is an web application designed to **explore and visualize mathemati
     *   `Dockerfile`: Defines the containerization environment for the service.
 *   `README.md`: This comprehensive project overview.
 
-## 🤝 Contributing:
+##  Contributing:
 Contributions are highly welcome! If you have suggestions for improvements, new features, or bug fixes, please follow these steps:
 1.  Fork the repository.
 2.  Create a new branch (`git checkout -b feature/your-feature-name`).
@@ -107,5 +107,5 @@ Contributions are highly welcome! If you have suggestions for improvements, new 
 
 For major changes, please open an issue first to discuss what you would like to change.
 
-## ⚖️ License:
+##  License:
 This project is open-source and licensed under the **MIT License**. See the `LICENSE` file for more details.
