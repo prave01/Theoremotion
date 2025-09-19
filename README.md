@@ -1,7 +1,7 @@
 # ✨ Theoremotion: Dynamic Mathematical Animation Platform ✨
 
 ## Description:
-Theoremotion is an advanced web application designed to **explore and visualize mathematical theorems with interactive motion graphics**. It leverages a powerful Next.js frontend, custom APIs for orchestrating local AI capabilities via Ollama, and a robust vector database for managing embeddings. At its core, Theoremotion features **AI-driven generation and debugging of Manim animation scripts**, enabling users to bring complex mathematical concepts to life with ease.
+Theoremotion is an web application designed to **explore and visualize mathematical theorems with interactive motion graphics**. It leverages a powerful Next.js frontend, custom APIs for orchestrating local AI capabilities via Ollama, and a robust vector database for managing embeddings. At its core, Theoremotion features **AI-driven generation and debugging of Manim animation scripts**, enabling users to bring complex mathematical concepts to life with ease.
 
 ## 🚀 Features:
 *   **Interactive Theorem Visualization:** Dive deep into complex mathematical theorems through dynamic and interactive motion graphics, making abstract concepts tangible and understandable.
